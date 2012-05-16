@@ -6,36 +6,54 @@
     <title>OMG Particles!</title>
     <script type="text/javascript" src="d3.js"></script>
     <style type="text/css">
+        body {
+          background: #222;
+        }
 
-body {
-  background: #222;
-}
-
-circle {
-  fill: none;
-  stroke-width: 1.5px;
-}
+        circle {
+          fill: none;
+          stroke-width: 1.5px;
+        }
 
 #container {
-  width: 960px;
-  margin: 0 auto;
-}
-
+          width: 960px;
+          margin: 0 auto;
+        }
     </style>
   </head>
   <body>
+    <div id="time">
+      time
+    </div>
     <div id="container">
     </div>
+    <script src="dsp.js"></script>
+    <script src="AudioKeys.js"></script>
     <script type="text/javascript">
 
+function part(x, y, z, size) {
+  return {
+    x: x,
+    y: y,
+    z: z,
+    size: size==undefined?1: size
+  }
+}
 function rotx(v, ang) {
     var c = Math.cos(ang)
     var s = Math.sin(ang)
-    return {
-      x: v.x,
-      y: v.y*c - v.z*s,
-      z: v.z*c + v.y*s
-    }
+    return part(v.x, v.y*c - v.z*s, v.z*c + v.y*s)
+}
+function rotz(v, ang) {
+    var c = Math.cos(ang)
+    var s = Math.sin(ang)
+    return part(v.x*c - v.y*s, v.y*c + v.x*s, v.z, v.size);
+}
+
+function roty(v, ang) {
+    var c = Math.cos(ang)
+    var s = Math.sin(ang)
+    return part(v.x*c + v.z*s, v.y,  v.z*c - v.x*s);
 }
 
 var w = 960,
@@ -77,16 +95,19 @@ function ParticleSystem() {
       var d = t.length - particles.length;
       for(var i = 0; i < d; ++i) {
         var ang = randf()*2*Math.PI;
-        particles.push({
-          x: 500*Math.cos(ang),
-          y: 500*Math.sin(ang),
-          z: 0
-        });
+        particles.push(part(500*Math.cos(ang), 500*Math.sin(ang), 0 ));
       }
     } else {
       particles = particles.slice(0, t.length);
     }
     target = t;
+  }
+
+  function append_morph(t) {
+    for(var i= 0, l=t.length; i < l; i++) {
+      target.push(t[i]);
+    }
+    morph_to(target);
   }
 
   this.custom_update = function(p) { return p };
@@ -99,11 +120,13 @@ function ParticleSystem() {
       p.x += (tp.x + Math.cos(time+i) - p.x)*0.1;
       p.y += (tp.y + Math.sin(time+i)- p.y)*0.1;
       p.z += (tp.z - p.z)*0.1;
+      p.size += (tp.size - p.size)*0.1;
       
     }
   }
 
-  function morph_to_image(img, x, y, map) {
+  function morph_to_image(img, x, y, map, scale) {
+    scale = scale === undefined? 5:scale
     var px = get_pixels_for(function(ctx) {
         ctx.fillStyle = '#FFF';
         ctx.drawImage(img, x, y);
@@ -114,16 +137,12 @@ function ParticleSystem() {
       if(map) {
         p = map(p);
       }
-      new_target[i] = {
-        x: 5*p.x,
-        y: 5*p.y,
-        z: 5*p.z
-      }
+      new_target[i] = part(scale*p.x, scale*p.y, scale*p.z)
     }
     morph_to(new_target);
   }
 
-  function morph_to_text(text, x, y) {
+  function morph_to_text(text, x, y, append) {
     var px = get_pixels_for(function(ctx) {
         ctx.fillStyle = '#FFF';
         //#ctx.fillRect(0,0, 20, 20);
@@ -133,16 +152,16 @@ function ParticleSystem() {
     var new_target = [];
     for(var i = 0; i < px.length; ++i) {
       var p = px[i];
-      new_target[i] = {
-        x: 5*p.x,
-        y: 5*p.y,
-        z: 5*p.z
-      }
+      new_target[i] = part(5*p.x + 2*randf(), 5*p.y + 2*randf(), 0)
     }
-    morph_to(new_target);
+    if (append) {
+      append_morph(new_target);
+    } else {
+      morph_to(new_target);
+    }
   }
 
-  function render(svg) {
+  function render(svg, bass) {
     svg.selectAll('circle').
       data(particles)
       .enter()
@@ -161,23 +180,23 @@ function ParticleSystem() {
     svg.selectAll('circle').
       data(particles)
       .attr('r', function(p) {
-        //return 300/(130 + p.z);
-          return 1;
+        return p.size*(2*bass + 100/(130 + p.z));
       })
       .attr('cx', function(p) {
         //return w2+p.x
-        return w2 + 130*p.x/(130 + p.z)
-       })
+        return w2 + 100*p.x/(100 + p.z)
+      })
       .attr('cy', function(p){ 
           //return h2+p.y
-          return h2 + 130*p.y/(130 + p.z)
-          })
+          return h2 + 100*p.y/(100 + p.z)
+      })
   }
 
   this.update = update;
   this.morph_to_text = morph_to_text;
   this.morph_to_image = morph_to_image;
   this.render = render;
+  this.morph_to = morph_to;
   return this;
 }
 
@@ -208,58 +227,172 @@ function get_pixels_for(f) {
   for(var i=0; i < CSIZE*CSIZE*4; i+=4) {
     if(px[i] > 0) {
       var jj = i/4;
-      pixels.push({
-        x: jj%CSIZE - CSIZE2,
-        y: ((jj/CSIZE)>>0) - CSIZE2
-      })
+      pixels.push(part(jj%CSIZE - CSIZE2, ((jj/CSIZE)>>0) - CSIZE2, 0))
     }
   }
   return pixels;
 }
 
+function SceneManager(scenes) {
+  var curr = null;
+  this.scenes = scenes;
+  var scene = scenes[0];
+  this.update = function(time, bass) {
+    var i = 0;
+    for(; i < scenes.length && scenes[i].time < time; ++i) {
+    }
+    scene = scenes[i-1]
+      if((scene.force || bass > 0.2) && (curr === null || curr.time != scene.time)) {
+        console.log(bass);
+        console.log("scene " + i);
+        scene.go();
+        curr = scene;
+    }
+  }
+}
+
+var orbit = function(){
+        textPart.custom_update = function(p, time) {
+              var d = Math.sqrt(p.x*p.x + p.y*p.y)
+              var vel = Math.max(10, (200 - d))
+              vel*=vel;
+              return rotz(p, vel*0.000001);
+        }
+        var particles = [];
+        for(var i = 0; i < 100 ; ++i) {
+          var phase = 2*Math.PI*i/NPART;
+          //particles[i] = part(400*randf(), 400*randf(), 0) ;
+          var R = 15 + 300*randf();
+          particles[i] = part(R*Math.cos(phase), R*Math.sin(phase),0);
+          particles[i].size = ((40+R)/315)*(3+ 5*Math.random())
+        }
+        textPart.morph_to(particles);
+}
+var collapse = function() { 
+      textPart.custom_update = function(p, time) {
+          p.x *= 1.01;
+          p.y *=0.99;
+          p.size *=0.99;
+          return p;
+      }
+      var particles = [];
+      for(var i = 0; i < 200 ; ++i) {
+        var phase = 2*Math.PI*i/NPART;
+        particles[i] = part(400*randf(), 400*randf(), 0) ;
+        particles[i].size = 10+ 20*Math.random()
+      }
+      textPart.morph_to(particles);
+      
+}
+
+scenemanager = new SceneManager([
+    {time: 0, go: function() { } },
+    {time: 10, force: true, go: collapse },
+    {time: 7797, go: function() { 
+    textPart.custom_update = function(p, time) { return p}
+    textPart.morph_to_text('HELLO!', 20, 30); } },
+    {time: 11145, go: function() { textPart.morph_to_text('we are', 20, 40); } },
+    {time: 14500, go: function() { 
+          textPart.morph_to_image(viz_logo, 10, 30);
+      }
+    },
+    {time: 17000, go: function() { 
+        textPart.morph_to_text('we', 30, 40);
+      }
+    },
+    {time: 18000, go: function() { 
+        textPart.morph_to_text('♥', 70, 70, true);
+      }
+    },
+    {time: 19000, go: function() { 
+        textPart.morph_to_text('maps', 0, 70, true);
+      }
+    },
+    /*{time: 20000, go: function() { 
+        textPart.morph_to_text('we♥data', 0, 40);
+      }
+    },*/
+    {time: 21436, go: function() { 
+        textPart.morph_to_image(world, 0, 20, null, 5);
+      }
+    },
+    {time: 23436, go: function() { 
+        textPart.custom_update = function(p, time) {
+              return roty(p, time*0.000001);
+        }
+        textPart.morph_to_image(world, 0, 0, function(p) {
+          var polar = pixeltoLatLon(p);
+          var R = 60;
+          var r = R*Math.cos(-polar.lat);
+          var p = part(r*Math.sin(polar.lng), r*Math.cos(polar.lng), R*Math.sin(-polar.lat));
+          return  rotx(p, Math.PI/2);
+        }, 1);
+      }
+    },
+    {time: 27000, go: function() { 
+        textPart.morph_to_text('we♥data', 0, 40);
+        for(var i = 0; i < textPart.target.length; ++i) {
+            textPart.target[i].z = 250;
+        }
+      }
+    },
+    {time: 32500, go: orbit},
+    {time: 38500, go: function() {
+        textPart.custom_update = function(p, time) {
+          return p;
+        }
+        var particles = [];
+        particles.push(part(-300, 100, 0, 20))
+        particles.push(part(-300, 100, 0, 10))
+        particles.push(part(-300, 50, 0, 5))
+        particles.push(part(-300, 50, 0, 3))
+
+        particles.push(part(300, 100, 0, 20))
+        particles.push(part(300, 100, 0, 10))
+        particles.push(part(300, 50, 0, 5))
+        particles.push(part(300, 50, 0, 3))
+
+        textPart.morph_to(particles);
+        textPart.morph_to_text('see you in', 2, 50, true);
+        textPart.morph_to_text('#spainjs', 12, 75, true);
+      }
+    },
+    /*{time: 38500, go: function() {
+        textPart.morph_to_text('music: ', 0, 50, true);
+    }
+    }*/
+]);
+
 
 function init_() {
   for(var i = 0; i < NPART; ++i) {
     var phase = 2*Math.PI*i/NPART;
-    particles[i] = {
-      x: 100*Math.cos(phase),
-      y: 100*Math.sin(phase),
-      z: 0
-    }
+    particles[i] = part(100*Math.cos(phase), 100*Math.sin(phase),0);
   }
 }
 
 
 var textPart = new ParticleSystem();
+var audio = new AudioKeys('music.mp3');
 
 function init() {
+  audio.load(function() {
+    audio.play();
+    audio.addWatchers(0, 10, 180, 255);
+    init_render();
+  });
+}
 
-  textPart.morph_to_text('javi', 10, 30);
-  setTimeout(function() {
-    //morph_to_text('hola', 10, 30);
-    textPart.custom_update = function(p, time) {
-      return rotx(p, time*0.001);
-    }
-    textPart.morph_to_image(world, 0, 0, function(p) {
-      var polar = pixeltoLatLon(p);
-      var R = 10;
-      var r = R*Math.cos(-polar.lat);
-      var p = {
-        x: r*Math.sin(polar.lng),
-        y: r*Math.cos(polar.lng),
-        z: R*Math.sin(-polar.lat)
-      }
-      return p;
-    });
-  }, 2000)
-
-  return;
-  setTimeout(function() {
-    textPart.morph_to_text('que tal?', 10, 30);
-  }, 5000)
-  setTimeout(function() {
-    textPart.morph_to_text('somos vizzuality', 10, 30);
-  }, 8000)
+function init_render() {
+  start = new Date().getTime();
+  setInterval(function() {
+      time = (new Date().getTime() - start);
+      audio.process();
+      textPart.update(time);
+      bass = audio.getLevels(0);
+      textPart.render(svg, bass);
+      scenemanager.update(time, bass);
+  }, 20);
 }
 
 function randf() { 
@@ -270,12 +403,10 @@ function rand_step() {
 }
 
 init();
+window.onkeypress = function(e) {
+  console.log("time " + (time))
+}
 
-setInterval(function() {
-    time += 0.03;
-    textPart.update(time);
-    textPart.render(svg);
-}, 20);
 
 function particle() {
   morph_to_text('javi', 10, 20);
