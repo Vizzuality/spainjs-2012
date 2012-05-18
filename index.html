@@ -322,6 +322,24 @@ function SceneManager(scenes) {
   }
 }
 
+var spiral = function(){
+        textPart.custom_update = function(p, time) {
+              p = rotz(p, 0.05);
+              p.z -= 10;
+              return p;
+
+        }
+        var particles = [];
+        for(var i = 0; i < 200 ; ++i) {
+          var phase = 31*2*Math.PI*i/NPART;
+          //particles[i] = part(400*randf(), 400*randf(), 0) ;
+          var R = 300;
+          particles[i] = part(R*Math.cos(phase), R*Math.sin(phase),15*i);
+          particles[i].size = 3;//((40+R)/315)*(3+ 5*Math.random())
+        }
+        textPart.morph_to(particles);
+}
+
 var orbit = function(){
         textPart.custom_update = function(p, time) {
               var d = Math.sqrt(p.x*p.x + p.y*p.y)
@@ -358,6 +376,11 @@ var collapse = function() {
       
 }
 
+function reset() {
+  textPart.custom_update = function(p, time) { return p; }
+}
+
+var BASE = 39000;
 scenemanager = new SceneManager([
     {time: 0, go: function() { } },
     {time: 10, force: true, go: collapse },
@@ -366,30 +389,26 @@ scenemanager = new SceneManager([
     textPart.morph_to_text('HELLO!', 20, 30); } },
     {time: 11145, go: function() { textPart.morph_to_text('we are', 20, 40); } },
     {time: 14500, go: function() { 
-          textPart.morph_to_image(viz_logo, 10, 30);
+          textPart.morph_to_image(viz_logo, 10, 15);
       }
     },
-    {time: 17000, go: function() { 
+    {time: 19500, go: function() { 
         textPart.morph_to_text('we', 30, 40);
       }
     },
-    {time: 18000, go: function() { 
+    {time: 20000, go: function() { 
         textPart.morph_to_text('♥', 70, 70, true);
       }
     },
-    {time: 19000, go: function() { 
+    {time: 20500, go: function() { 
         textPart.morph_to_text('maps', 0, 70, true);
       }
     },
-    /*{time: 20000, go: function() { 
-        textPart.morph_to_text('we♥data', 0, 40);
-      }
-    },*/
-    {time: 21436, go: function() { 
+    {time: 23436, go: function() { 
         textPart.morph_to_image(world, 0, 20, null, 5);
       }
     },
-    {time: 23436, go: function() { 
+    {time: 26436, go: function() { 
         textPart.custom_update = function(p, time) {
               return roty(p, time*0.000001);
         }
@@ -402,18 +421,24 @@ scenemanager = new SceneManager([
         }, 1);
       }
     },
-    {time: 27000, go: function() { 
-        textPart.morph_to_text('we♥data', 0, 40);
-        for(var i = 0; i < textPart.target.length; ++i) {
-            textPart.target[i].z = 250;
+    {time: 31000, go: function() { 
+        textPart.custom_update = function(p, time) {
+              return p;
         }
+        textPart.morph_to_text('we♥data', 10, 55);
       }
     },
-    {time: 32500, go: orbit},
-    {time: 38500, go: function() {
-        textPart.custom_update = function(p, time) {
-          return p;
-        }
+    {time: 34500, go: orbit},
+    {time: BASE,force: true, go: function() { reset(); textPart.morph_to_text('this', 0, 15); }},
+    {time: BASE + 300, force: true,go: function() { textPart.morph_to_text('is', 0, 35, true); }},
+    {time: BASE + 600, force: true,go: function() { textPart.morph_to_text('our', 0, 55, true); }},
+    {time: BASE + 900, force: true, go: function() { textPart.morph_to_text('proposal', 0, 75, true); }},
+    {time: BASE + 1200, force: true, go: function() { textPart.morph_to_text('for', 0, 95, true); }},
+    {time: BASE + 5200, force: true,go: function() { textPart.morph_to_text('SPAINJS', 10, 55 ); }},
+    {time: BASE + 7000, force: true,go: function() { textPart.morph_to_text('D3 ♥ JS', 10, 55 ); }},
+    {time: BASE + 11000, go: spiral},
+    {time: BASE + 14500, go: function() {
+        reset();
         var particles = [];
         particles.push(part(-300, 100, 0, 20))
         particles.push(part(-300, 100, 0, 10))
@@ -426,8 +451,8 @@ scenemanager = new SceneManager([
         particles.push(part(300, 50, 0, 3))
 
         textPart.morph_to(particles);
-        textPart.morph_to_text('see you in', 2, 50, true);
-        textPart.morph_to_text('#spainjs', 12, 75, true);
+        textPart.morph_to_text('see you in', 2, 40, true);
+        textPart.morph_to_text('#spainjs', 12, 65, true);
       }
     },
     /*{time: 38500, go: function() {
