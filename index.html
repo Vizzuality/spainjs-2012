@@ -7,29 +7,66 @@
     <script type="text/javascript" src="d3.js"></script>
     <style type="text/css">
         body {
-          background: #222;
+          background: #111;
         }
+          svg{ background: #333333 url('../img/bkg.jpg') no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; }
 
+          svg {
+          }
         circle {
           fill: none;
           stroke-width: 1.5px;
         }
 
-#container {
+        #container {
           width: 960px;
-          margin: 0 auto;
+          margin: 50px auto;
+          position: relative;
         }
+        svg {
+          border: 3px solid white;
+          position: absolute;
+        }
+
+        #over {
+          position: absolute;
+        }
+        /* original code by google: http://www.youtube.com/watch?v=ttavBa4giPc */
+        .cover {
+          width: 960px;
+          height: 500px;
+
+          background: -webkit-linear-gradient(top, rgba(200, 200,200 , .5), transparent), -webkit-linear-gradient(top, transparent, rgba(0,0,0, .33), rgba(0,0,0, .33), transparent, transparent, transparent, transparent);
+          background-size: 100% 2px, 960px 620px;
+          background-clip: border-box;
+          point-events: none;
+          -webkit-animation-name: flicker;
+          -webkit-animation-duration: 2s;
+          -webkit-animation-iteration-count: infinite;
+          -webkit-animation-timing-function: linear;
+        }
+
+        @-webkit-keyframes flicker {
+          0% { opacity: .95; background-position: 0 0, 0 620px; }
+          10% { opacity: .9; }
+          20% { opacity: .75; }
+          30% { opacity: .9; }
+          40% { opacity: .75; }
+          50% { opacity: .9; }
+          80% { opacity: .7; }
+          90% { opacity: .92; }
+          100% { opacity: .9;  background-position 0 0, 0 0;}
+        }
+        
     </style>
   </head>
   <body>
-    <div id="time">
-      time
-    </div>
-    <div id="container">
+    <div id="container" >
     </div>
     <script src="dsp.js"></script>
     <script src="AudioKeys.js"></script>
     <script type="text/javascript">
+
 
 function part(x, y, z, size) {
   return {
@@ -64,12 +101,46 @@ var w = 960,
 var w2 = w/2;
 var h2 = h/2;
 
+function front_canvas() {
+    var canvas = document.createElement('canvas');
+    canvas.setAttribute('id', 'over');
+    var W = w/2.0;
+    var H = h/2.0;
+    canvas.height= H;
+    canvas.width= W;
+    canvas.style.height = 2*h + 'px';
+    canvas.style.width = w + 'px';
+    var ctx = canvas.getContext('2d');
+    var pixels = ctx.getImageData(0,0,w, h);
+    for(var i=0;i<W;++i) 
+    for(var j=0;j<H; ++j) {
+        var x = i/W;
+        var y = j/H;
+        var o = x*(1-x)*y*(1-y);
+        o = Math.sqrt(Math.sqrt(o));
+        var c = Math.random()*0.2;
+        var idx = 4*(j*W+i);
+        pixels.data[idx+0] = 30;
+        pixels.data[idx+1] = 30;
+        pixels.data[idx+2] = 30;
+        pixels.data[idx+3] = 200*(1-o)+ 100*c//*255*c;//*(c*255);
+    }
+    ctx.putImageData(pixels, 0, 0);
+    return canvas;
+}
+
+
 var svg = d3.select("#container").append("svg:svg")
     .attr("width", w)
     .attr("height", h)
     .style("pointer-events", "all")
     //.on("mousemove", particle);
     .on("mousedown", particle);
+
+//document.getElementById("container").appendChild(front_canvas());
+var cover = document.createElement('div');
+cover.setAttribute('class', 'cover');
+document.getElementById("container").appendChild(cover);
 
 var canvas = document.createElement('canvas');
 
@@ -270,13 +341,15 @@ var orbit = function(){
 }
 var collapse = function() { 
       textPart.custom_update = function(p, time) {
-          p.x *= 1.01;
+          p.x *= 1.005;
           p.y *=0.99;
-          p.size *=0.99;
+          var d = Math.abs(p.x + p.y);
+          if(d > 130) d = 130;
+          p.size *= (0.999 + 0.008*(130 -d)/130)
           return p;
       }
       var particles = [];
-      for(var i = 0; i < 200 ; ++i) {
+      for(var i = 0; i < 100 ; ++i) {
         var phase = 2*Math.PI*i/NPART;
         particles[i] = part(400*randf(), 400*randf(), 0) ;
         particles[i].size = 10+ 20*Math.random()
