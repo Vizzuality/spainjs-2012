@@ -387,7 +387,7 @@ scenemanager = new SceneManager([
     {time: BASE + 600, force: true,go: function() { textPart.morph_to_text('our', 0, 55, true); }},
     {time: BASE + 900, force: true, go: function() { textPart.morph_to_text('proposal', 0, 75, true); }},
     {time: BASE + 1200, force: true, go: function() { textPart.morph_to_text('for', 0, 95, true); }},
-    {time: BASE + 3000, force: true,go: function() { textPart.morph_to_text('xx *was*', 0, 35, true); }},
+    {time: BASE + 2000, force: true,go: function() { textPart.morph_to_text('xx *was*', 0, 35, true); }},
     {time: BASE + 5200, force: true,go: function() { textPart.morph_to_text('SPAINJS', 10, 55 ); }},
     {time: BASE + 7000, force: true,go: function() { textPart.morph_to_text('D3 ♥ JS', 10, 55 ); }},
     {time: BASE + 11000, go: spiral},
