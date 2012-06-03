@@ -8,6 +8,8 @@
     <style type="text/css">
         body {
           background: #111;
+          font-family: Helvetica;
+          color: #FFF;
         }
           svg{ background: #333333 url('../img/bkg.jpg') no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover; }
 
@@ -55,11 +57,58 @@
           90% { opacity: .92; }
           100% { opacity: .9;  background-position 0 0, 0 0;}
         }
+
+        .wtf{
+          width: 960px;
+          margin: 50px auto;
+        }
+        h1 {
+          text-transform: uppercase;
+          font-size: 16px;
+        }
+        p {
+          font-size: 16px;
+          line-height: 1.5em;
+        }
+        a {
+          color: #FFF;
+          text-decoration: none;
+          border-bottom: 1px dotted #FFF;
+        }
+
+        .box {
+          float: left;
+          width: 300px;
+          margin-right: 30px;
+        }
+        .last {
+          margin-right: 0px;
+        }
         
     </style>
   </head>
   <body>
-    <div id="container" >
+    <div id="container" > </div>
+    <div class="wtf">
+      <div class="box">
+        <h1>what</h1>
+        <p>This is a little demo showing what we had prepared for our spainjs talk.</p>
+        <p>Unfortunately our talk has not been accepted, we will try next year.</p>
+      </div>
+
+      <div class="box">
+        <h1>how</h1>
+        <p>This demo is done with D3, a javascript library for data visualization, that shows how easy is to create a particle system with SVG. </p>
+        <p>It uses HTML5 audio API for realtime sound spectrum analysis, canvas and some lovely effects done with CSS3 animations.</p>
+      </div>
+
+      <div class="box last">
+        <h1>who</h1>
+        <p>We are Vizzuality, a small company that works in stories that matter. More in our <a href="http://vizzuality.com">website</a>.
+        <p>Music by Jeroen Tel / Maniacs of Noise, available <a href="http://remix.kwed.org/?search_id=4500">here</a></p>
+        <p>Thanks to <a href="http://twitter.com/#!/BlurSpline">@BlurSpline</a> by <a href="https://github.com/zz85/audiokeys.js">Audiokeys.js</a> library and <a href="http://bost.ocks.org/mike/">Mike Bostock</a> for creating D3.</p>
+      </div>
+
     </div>
     <script src="dsp.js"></script>
     <script src="AudioKeys.js"></script>
