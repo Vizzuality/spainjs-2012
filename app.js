@@ -63,6 +63,12 @@ var svg = d3.select("#container").append("svg:svg")
     //.on("mousemove", particle);
     .on("mousedown", particle);
 
+d3.select("#container").append("h1")
+    .style('position', 'absolute')
+    .style('top', '230px')
+    .style('left', '450px')
+    .text('loading');
+
 // set a layer on top to post processing effect
 var cover = document.createElement('div');
 cover.setAttribute('class', 'cover');
@@ -422,7 +428,9 @@ var textPart = new ParticleSystem();
 var audio = new AudioKeys('music.ogg');
 
 function init() {
+
   audio.load(function() {
+    d3.select("#container").select("h1").remove();
     audio.play();
     audio.addWatchers(0, 10, 180, 255);
     init_render();
