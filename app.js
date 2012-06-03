@@ -343,16 +343,16 @@ scenemanager = new SceneManager([
       }
     },
     {time: 19500, go: function() { 
-        textPart.morph_to_text('we', 30, 40);
+        textPart.morph_to_text(' we', 30, 25);
         textPart.chage_color(svg, '#0099CC');
       }
     },
     {time: 20000, go: function() { 
-        textPart.morph_to_text('♥', 70, 70, true);
+        textPart.morph_to_text(' ♥ ', 32, 55, true);
       }
     },
     {time: 20500, go: function() { 
-        textPart.morph_to_text('maps', 0, 70, true);
+        textPart.morph_to_text('maps', 25, 85, true);
       }
     },
     {time: 23436, go: function() { 
@@ -378,7 +378,7 @@ scenemanager = new SceneManager([
         textPart.custom_update = function(p, time) {
               return p;
         }
-        textPart.morph_to_text('we♥data', 10, 55);
+        textPart.morph_to_text('we ♥ data', 0, 55);
       }
     },
     {time: 34500, go: orbit},
@@ -387,7 +387,7 @@ scenemanager = new SceneManager([
     {time: BASE + 600, force: true,go: function() { textPart.morph_to_text('our', 0, 55, true); }},
     {time: BASE + 900, force: true, go: function() { textPart.morph_to_text('proposal', 0, 75, true); }},
     {time: BASE + 1200, force: true, go: function() { textPart.morph_to_text('for', 0, 95, true); }},
-    {time: BASE + 2000, force: true,go: function() { textPart.morph_to_text('xx *was*', 0, 35, true); }},
+    {time: BASE + 1500, force: true,go: function() { textPart.morph_to_text('xx was', 0, 35, true); }},
     {time: BASE + 5200, force: true,go: function() { textPart.morph_to_text('SPAINJS', 10, 55 ); }},
     {time: BASE + 7000, force: true,go: function() { textPart.morph_to_text('D3 ♥ JS', 10, 55 ); }},
     {time: BASE + 11000, go: spiral},
