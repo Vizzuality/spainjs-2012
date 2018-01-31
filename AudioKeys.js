@@ -14,7 +14,7 @@ var AudioKeys = function(url) {
 	
 	this.url = url;
 	
-	this.context = (context === undefined) ? new webkitAudioContext() : context;
+	this.context = (context === undefined) ? new AudioContext() : context;
 	this.source = this.context.createBufferSource();
 	this.analyzer = this.context.createAnalyser();
 	
@@ -36,10 +36,14 @@ AudioKeys.prototype.load = function(callback) {
 	request.open("GET", this.url, true);
 	request.responseType = "arraybuffer";
 	request.onload = function() {
-		audio.buffer = audio.context.createBuffer(request.response, true);
-		audio.reload();
-		if (callback) callback();
-	}
+		//audio.buffer = audio.context.createBuffer(request.response, true, 1);
+        audio.buffer = audio.context.createBufferSource();
+        audio.context.decodeAudioData(request.response, function(buffer) {
+          audio.buffer = buffer;
+          audio.reload();
+          if (callback) callback();
+        });
+	};
 
 	request.send();
 };
@@ -60,7 +64,7 @@ AudioKeys.prototype.play = function(time) {
 	this.analyzer.connect(this.context.destination);
 
 	//this.reload(); // run this to return to the start of time
-    source.noteOn(time);
+    source.start(time);
 	this.isPlaying = true;
 	
 	
